@@ -6,7 +6,6 @@ const { createRoot } = ReactDOM
 // Router supporting both pathname and hash. Uses history API for navigation.
 function useRouter(){
   const getRoute = () => {
-    // prefer pathname if it's not the root; fallback to hash
     const p = window.location.pathname || '/'
     if(p && p !== '/' && p !== '/index.html') return p
     const h = window.location.hash.slice(1)
@@ -24,13 +23,11 @@ function useRouter(){
 
   const push = (path) => {
     if(!path) path = '/'
-    // if path starts with '#', set hash
     if(path.startsWith('#')){
       window.location.hash = path.slice(1)
       setRoute(path.slice(1) || '/')
       return
     }
-    // use history API to update URL without reload
     try{ window.history.pushState({}, '', path) }catch(e){ window.location.hash = path }
     setRoute(path)
   }
@@ -72,14 +69,23 @@ function useData(){ const ctx = useContext(DataContext); if(!ctx) throw new Erro
 
 // Components
 function Nav(){
+  const { user, logout } = useData()
   const { push } = useRouter()
+
   return (
     React.createElement('header', { className: 'site-nav' },
       React.createElement('div', { className: 'site-nav-inner' },
         React.createElement('a', { className: 'brand', href: '/', onClick: (e)=>{ e.preventDefault(); push('/') }}, 'FitTrack'),
         React.createElement('nav', { className: 'nav-links' },
           React.createElement('a', { className: 'nav-link', href: '/', onClick: (e)=>{ e.preventDefault(); push('/') }}, 'Home'),
-          React.createElement('a', { className: 'nav-link', href: '/signup', onClick: (e)=>{ e.preventDefault(); push('/signup') }}, 'Sign Up'),
+          !user && React.createElement(React.Fragment, null,
+            React.createElement('a', { className: 'nav-link', href: '/login', onClick: (e)=>{ e.preventDefault(); push('/login') }}, 'Login'),
+            React.createElement('a', { className: 'nav-link', href: '/register', onClick: (e)=>{ e.preventDefault(); push('/register') }}, 'Register')
+          ),
+          user && React.createElement(React.Fragment, null,
+            React.createElement('span', { className: 'nav-link muted' }, user.email),
+            React.createElement('button', { className: 'nav-link btn btn-ghost', onClick: ()=>{ logout(); push('/') }}, 'Logout')
+          ),
           React.createElement('a', { className: 'nav-link', href: '/dashboard', onClick: (e)=>{ e.preventDefault(); push('/dashboard') }}, 'Dashboard')
         )
       )
@@ -89,6 +95,7 @@ function Nav(){
 
 function Home(){
   const { push } = useRouter()
+  const { user } = useData()
   return (
     React.createElement('main', { className: 'app-root' },
       React.createElement('section', { className: 'hero card' },
@@ -96,15 +103,21 @@ function Home(){
         React.createElement('p', { className: 'hero-sub' }, 'Your lightweight workout and progress tracker'),
         React.createElement('p', { className: 'hero-text' }, 'Prototype frontend using components and in-browser temporary storage.'),
         React.createElement('div', { className: 'cta-group' },
-          React.createElement('button', { className: 'btn btn-primary', onClick: ()=> push('/signup') }, 'Sign Up / Login'),
-          React.createElement('button', { className: 'btn btn-outline', onClick: ()=> push('/dashboard') }, 'Open Dashboard')
+          !user && React.createElement(React.Fragment, null,
+            React.createElement('button', { className: 'btn btn-primary', onClick: ()=> push('/register') }, 'Register'),
+            React.createElement('button', { className: 'btn btn-outline', onClick: ()=> push('/login') }, 'Login')
+          ),
+          user && React.createElement(React.Fragment, null,
+            React.createElement('span', { className: 'muted', style: { alignSelf: 'center' } }, `Signed in as ${user.email}`),
+            React.createElement('button', { className: 'btn btn-ghost', onClick: ()=> push('/dashboard') }, 'Open Dashboard')
+          )
         )
       )
     )
   )
 }
 
-function Auth(){
+function Auth({ mode }){
   const { signup, login, user } = useData()
   const { push } = useRouter()
   const [email, setEmail] = useState('')
@@ -113,17 +126,20 @@ function Auth(){
 
   useEffect(()=>{ if(user) setStatus('Logged in as ' + user.email) }, [user])
 
+  const doSignup = () => { if(!email||!password){ alert('Provide email and password'); return } signup(email); setStatus('Signed up and logged in as '+email); setTimeout(()=> push('/dashboard'),700) }
+  const doLogin = () => { if(!email||!password){ alert('Provide email and password'); return } login(email); setStatus('Logged in as '+email); setTimeout(()=> push('/dashboard'),700) }
+
   return (
     React.createElement('main', { className: 'app-root' },
       React.createElement('section', { className: 'card auth-card' },
-        React.createElement('h1', { className: 'card-title' }, 'Sign Up / Login'),
+        React.createElement('h1', { className: 'card-title' }, mode === 'login' ? 'Login' : (mode === 'register' ? 'Register' : 'Sign Up / Login')),
         React.createElement('p', { className: 'card-sub' }, 'Create a demo account or log in (stored in your browser).'),
         React.createElement('div', { className: 'form' },
           React.createElement('label', { className: 'label' }, 'Email', React.createElement('input', { className: 'input', type: 'email', value: email, onInput: e=> setEmail(e.target.value) })),
           React.createElement('label', { className: 'label' }, 'Password', React.createElement('input', { className: 'input', type: 'password', value: password, onInput: e=> setPassword(e.target.value) })),
           React.createElement('div', { className: 'form-actions' },
-            React.createElement('button', { className: 'btn btn-primary', onClick: ()=>{ if(!email||!password){ alert('Provide email and password'); return } signup(email); setStatus('Signed up and logged in as '+email); setTimeout(()=> push('/dashboard'),700) } }, 'Sign Up'),
-            React.createElement('button', { className: 'btn btn-outline', onClick: ()=>{ if(!email||!password){ alert('Provide email and password'); return } login(email); setStatus('Logged in as '+email); setTimeout(()=> push('/dashboard'),700) } }, 'Login')
+            (mode === 'login' || !mode) && React.createElement('button', { className: 'btn btn-outline', onClick: doLogin }, 'Login'),
+            (mode === 'register' || !mode) && React.createElement('button', { className: 'btn btn-primary', onClick: doSignup }, 'Register')
           ),
           React.createElement('p', { className: 'status-message muted' }, status)
         )
@@ -197,15 +213,14 @@ function ActivityList(){
 }
 
 function Dashboard(){
-  const { user, logout } = useData()
+  const { user } = useData()
   const { push } = useRouter()
   return (
     React.createElement('main', { className: 'app-root' },
       React.createElement('header', { className: 'dashboard-header card' },
         React.createElement('div', null, React.createElement('h2', { className: 'dashboard-title' }, 'Dashboard'), React.createElement('p', { className: 'dashboard-sub' }, 'Manage your activities (stored in your browser)')),
         React.createElement('div', { className: 'user-actions' },
-          React.createElement('span', { className: 'user-email muted' }, user ? user.email : 'Guest'),
-          React.createElement('button', { className: 'btn btn-outline', onClick: ()=> { logout(); push('/signup') } }, 'Logout')
+          React.createElement('span', { className: 'user-email muted' }, user ? user.email : 'Guest')
         )
       ),
       React.createElement('section', { className: 'grid' },
@@ -218,11 +233,14 @@ function Dashboard(){
 
 function App(){
   const { route } = useRouter()
+  // Determine mode for auth routes
+  const authMode = route === '/login' ? 'login' : (route === '/register' ? 'register' : null)
+
   return (
     React.createElement(DataProvider, null,
       React.createElement(Nav, null),
       route === '/' && React.createElement(Home, null),
-      route === '/signup' && React.createElement(Auth, null),
+      (route === '/signup' || route === '/register' || route === '/login') && React.createElement(Auth, { mode: authMode }),
       route === '/dashboard' && React.createElement(Dashboard, null),
       React.createElement('footer', { className: 'app-footer' }, '© FitTrack')
     )
