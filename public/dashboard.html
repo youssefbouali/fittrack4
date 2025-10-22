@@ -7,21 +7,31 @@
   <link rel="stylesheet" href="/styles.css">
 </head>
 <body>
+  <header class="site-nav">
+    <div class="site-nav-inner">
+      <a class="brand" href="/">FitTrack</a>
+      <nav class="nav-links">
+        <a class="nav-link" href="/">Home</a>
+        <a class="nav-link" href="/signup.html">Sign Up</a>
+      </nav>
+    </div>
+  </header>
+
   <main class="app-root">
-    <header class="dashboard-header">
+    <header class="dashboard-header card">
       <div>
         <h2 class="dashboard-title">Dashboard</h2>
         <p class="dashboard-sub">Manage your activities (stored in your browser)</p>
       </div>
       <div class="user-actions">
-        <span id="userEmail" class="user-email">Guest</span>
-        <button id="logout" class="btn-ghost">Logout</button>
-        <a class="back-link" href="/">Home</a>
+        <span id="userEmail" class="user-email muted">Guest</span>
+        <button id="logout" class="btn btn-outline">Logout</button>
+        <a class="nav-link" href="/">Home</a>
       </div>
     </header>
 
     <section class="grid">
-      <div class="panel">
+      <div class="panel card">
         <h3 class="panel-title">Add Activity</h3>
         <form id="activityForm" class="form">
           <label class="label">Type
@@ -46,12 +56,12 @@
             <input id="photo" class="input" type="file" accept="image/*" />
           </label>
           <div class="form-actions">
-            <button class="btn-primary" type="submit">Add</button>
+            <button class="btn btn-primary" type="submit">Add</button>
           </div>
         </form>
       </div>
 
-      <div class="panel">
+      <div class="panel card">
         <h3 class="panel-title">Your Activities</h3>
         <div id="activitiesRoot"></div>
       </div>
@@ -83,7 +93,7 @@
                 <div class="activity-meta">${a.date} • ${a.duration} min • ${a.distance || 0} km</div>\
               </div>\
               <div class="activity-actions">\
-                <button class="btn-ghost" data-id="${a.id}">Delete</button>\
+                <button class="btn btn-ghost" data-id="${a.id}">Delete</button>\
               </div>\
             </div>\
             ${a.photo ? `<img class="activity-photo" src="${a.photo}" alt="activity" />` : ''}\
@@ -100,8 +110,7 @@
 
       document.getElementById('logout').addEventListener('click', ()=>{
         setCurrentUser(null);
-        document.getElementById('userEmail').textContent = 'Guest';
-        renderList();
+        window.location.href = '/signup.html';
       })
 
       // form handling with file -> base64
@@ -116,6 +125,7 @@
       form.addEventListener('submit', (e)=>{
         e.preventDefault();
         const user = getCurrentUser();
+        if(!user){ alert('Please sign up or login to add activities.'); window.location.href = '/signup.html'; return }
         const type = document.getElementById('type').value;
         const date = document.getElementById('date').value;
         const duration = Number(document.getElementById('duration').value || 0);
