@@ -119,7 +119,7 @@ resource "aws_iam_role_policy_attachment" "elastic_beanstalk_service" {
 }
 
 
-resource "aws_elastic_beanstalk_environment" "fittrack" {resource "aws_elastic_beanstalk_environment" "fittrack" {
+resource "aws_elastic_beanstalk_environment" "fittrack" {
   name        = "${var.app_name}-${var.environment}-env"
   application = aws_elastic_beanstalk_application.fittrack.name
   solution_stack_name = "64bit Amazon Linux 2 v5.8.1 running Node.js 18"
