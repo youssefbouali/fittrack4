@@ -506,20 +506,60 @@ resource "aws_elastic_beanstalk_environment" "fittrack" {
   solution_stack_name = "64bit Amazon Linux 2 v3.6.3 running Node.js 18"
 
   # Environment Variables
-  setting { namespace = "aws:elasticbeanstalk:application:environment" name = "NODE_ENV" value = var.environment }
-  setting { namespace = "aws:elasticbeanstalk:application:environment" name = "PORT" value = "5000" }
-  setting { namespace = "aws:elasticbeanstalk:application:environment" name = "AWS_REGION" value = var.aws_region }
-  setting { namespace = "aws:elasticbeanstalk:application:environment" name = "COGNITO_USER_POOL_ID" value = aws_cognito_user_pool.fittrack.id }
-  setting { namespace = "aws:elasticbeanstalk:application:environment" name = "COGNITO_CLIENT_ID" value = aws_cognito_user_pool_client.fittrack_web.id }
-  setting { namespace = "aws:elasticbeanstalk:application:environment" name = "DATABASE_URL" value = "postgresql://${var.db_username}:${var.db_password}@${aws_db_instance.fittrack.endpoint}/${aws_db_instance.fittrack.db_name}" }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "NODE_ENV"
+    value     = var.environment
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "PORT"
+    value     = "5000"
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "AWS_REGION"
+    value     = var.aws_region
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "COGNITO_USER_POOL_ID"
+    value     = aws_cognito_user_pool.fittrack.id
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "COGNITO_CLIENT_ID"
+    value     = aws_cognito_user_pool_client.fittrack_web.id
+  }
+  setting {
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "DATABASE_URL"
+    value     = "postgresql://${var.db_username}:${var.db_password}@${aws_db_instance.fittrack.endpoint}/${aws_db_instance.fittrack.db_name}"
+  }
 
   # IAM
-  setting { namespace = "aws:autoscaling:launchconfiguration" name = "IamInstanceProfile" value = aws_iam_instance_profile.elastic_beanstalk_ec2.name }
+  setting {
+    namespace = "aws:autoscaling:launchconfiguration"
+    name      = "IamInstanceProfile"
+    value     = aws_iam_instance_profile.elastic_beanstalk_ec2.name
+  }
 
   # VPC Configuration
-  setting { namespace = "aws:ec2:vpc" name = "VPCId" value = aws_vpc.main.id }
-  setting { namespace = "aws:ec2:subnets" name = "Subnets" value = join(",", aws_subnet.public[*].id) }
-  setting { namespace = "aws:autoscaling:launchconfiguration" name = "SecurityGroups" value = aws_security_group.elastic_beanstalk.id }
+  setting {
+    namespace = "aws:ec2:vpc"
+    name      = "VPCId"
+    value     = aws_vpc.main.id
+  }
+  setting {
+    namespace = "aws:ec2:subnets"
+    name      = "Subnets"
+    value     = join(",", aws_subnet.public[*].id)
+  }
+  setting {
+    namespace = "aws:autoscaling:launchconfiguration"
+    name      = "SecurityGroups"
+    value     = aws_security_group.elastic_beanstalk.id
+  }
 
   tags = var.tags
 
