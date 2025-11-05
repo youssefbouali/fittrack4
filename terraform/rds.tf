@@ -30,7 +30,7 @@ resource "aws_security_group" "rds" {
 resource "aws_db_instance" "fittrack" {
   identifier            = "${var.app_name}-${var.environment}-db"
   engine                = "postgres"
-  engine_version        = "14.6"
+  engine_version        = "14.15"
   instance_class        = var.db_instance_class
   allocated_storage     = var.db_allocated_storage
   storage_encrypted     = true
