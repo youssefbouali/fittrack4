@@ -10,6 +10,7 @@ resource "aws_security_group" "rds" {
   description = "Security group for RDS"
   vpc_id      = aws_vpc.main.id
 
+  # Elastic Beanstalk SG
   ingress {
     from_port       = 5432
     to_port         = 5432
@@ -28,13 +29,13 @@ resource "aws_security_group" "rds" {
 }
 
 resource "aws_db_instance" "fittrack" {
-  identifier            = "${var.app_name}-${var.environment}-db"
-  engine                = "postgres"
-  engine_version        = "14.15"
-  instance_class        = var.db_instance_class
-  allocated_storage     = var.db_allocated_storage
-  storage_encrypted     = true
-  db_subnet_group_name  = aws_db_subnet_group.fittrack.name
+  identifier             = "${var.app_name}-${var.environment}-db"
+  engine                 = "postgres"
+  engine_version         = "14.15"
+  instance_class         = var.db_instance_class
+  allocated_storage      = var.db_allocated_storage
+  storage_encrypted      = true
+  db_subnet_group_name   = aws_db_subnet_group.fittrack.name
   vpc_security_group_ids = [aws_security_group.rds.id]
 
   db_name  = replace(var.db_name, "-", "_")
@@ -64,7 +65,7 @@ resource "aws_secretsmanager_secret" "db_credentials" {
 }
 
 resource "aws_secretsmanager_secret_version" "db_credentials" {
-  secret_id = aws_secretsmanager_secret.db_credentials.id
+  secret_id     = aws_secretsmanager_secret.db_credentials.id
   secret_string = jsonencode({
     username = aws_db_instance.fittrack.username
     password = var.db_password
