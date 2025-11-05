@@ -128,9 +128,10 @@ resource "aws_elastic_beanstalk_environment" "fittrack" {
   # Instance profile
   setting {
     namespace = "aws:autoscaling:launchconfiguration"
-    name      = "IamInstanceProfile"
-    value     = aws_iam_instance_profile.elastic_beanstalk_ec2.name
+    name      = "SecurityGroups"
+    value     = aws_security_group.elastic_beanstalk.id
   }
+
 
   # Environment type
   setting {
