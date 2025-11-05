@@ -24,17 +24,30 @@ resource "aws_cognito_user_pool" "fittrack" {
     }
   }
 
+  # ⚠️ إزالة قسم schema المشكلة أو تعديله
   schema {
-    name              = "email"
     attribute_data_type = "String"
-    mutable           = true
-    required          = true
+    developed_only      = false
+    mutable             = true
+    name                = "email"
+    required            = true
+
+    string_attribute_constraints {
+      min_length = 1
+      max_length = 2048
+    }
   }
 
   schema {
-    name              = "name"
     attribute_data_type = "String"
-    mutable           = true
+    developed_only      = false
+    mutable             = true
+    name                = "name"
+
+    string_attribute_constraints {
+      min_length = 1
+      max_length = 2048
+    }
   }
 
   user_attribute_update_settings {
