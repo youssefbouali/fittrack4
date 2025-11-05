@@ -181,7 +181,7 @@ resource "aws_elastic_beanstalk_environment" "fittrack" {
   ]
 }
 
-output "elastic_beanstalk_endpoint" {
-  value       = aws_elastic_beanstalk_environment.fittrack.endpoint_url
-  description = "Elastic Beanstalk environment endpoint"
-}
+#output "elastic_beanstalk_endpoint" {
+#  value       = aws_elastic_beanstalk_environment.fittrack.endpoint_url
+#  description = "Elastic Beanstalk environment endpoint"
+#}
