@@ -244,7 +244,7 @@ resource "aws_cognito_identity_pool" "fittrack" {
   cognito_identity_providers {
     client_id              = aws_cognito_user_pool_client.fittrack_web.id
     provider_name          = aws_cognito_user_pool.fittrack.endpoint
-    server_side_token_validation = false
+    #server_side_token_validation = false
   }
 
   depends_on = [aws_cognito_user_pool.fittrack, aws_cognito_user_pool_client.fittrack_web]
@@ -422,7 +422,7 @@ resource "aws_iam_instance_profile" "elastic_beanstalk_ec2" {
 resource "aws_elastic_beanstalk_application" "fittrack" {
   name            = "${var.app_name}-${var.environment}"
   description     = "FitTrack application"
-  service_role    = aws_iam_role.elastic_beanstalk_service.arn
+  #service_role    = aws_iam_role.elastic_beanstalk_service.arn
 
   tags = var.tags
 }
