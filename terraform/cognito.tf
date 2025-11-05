@@ -24,30 +24,19 @@ resource "aws_cognito_user_pool" "fittrack" {
     }
   }
 
-  # ⚠️ إزالة قسم schema المشكلة أو تعديله
+  # Schema بسيط وصحيح
   schema {
-    attribute_data_type = "String"
-    developed_only      = false
-    mutable             = true
     name                = "email"
+    attribute_data_type = "String"
+    mutable             = true
     required            = true
-
-    string_attribute_constraints {
-      min_length = 1
-      max_length = 2048
-    }
   }
 
   schema {
-    attribute_data_type = "String"
-    developed_only      = false
-    mutable             = true
     name                = "name"
-
-    string_attribute_constraints {
-      min_length = 1
-      max_length = 2048
-    }
+    attribute_data_type = "String"
+    mutable             = true
+    required            = false
   }
 
   user_attribute_update_settings {
@@ -92,7 +81,7 @@ resource "aws_cognito_user_pool_client" "fittrack_web" {
 }
 
 resource "aws_cognito_identity_pool" "fittrack" {
-  identity_pool_name             = "${var.app_name}_${var.environment}_identity_pool"
+  identity_pool_name               = "${var.app_name}_${var.environment}_identity_pool"
   allow_unauthenticated_identities = false
 
   cognito_identity_providers {
@@ -100,7 +89,6 @@ resource "aws_cognito_identity_pool" "fittrack" {
     provider_name = aws_cognito_user_pool.fittrack.endpoint
   }
   
-
   depends_on = [aws_cognito_user_pool.fittrack, aws_cognito_user_pool_client.fittrack_web]
 }
 
@@ -132,14 +120,13 @@ resource "aws_iam_role" "cognito_authenticated" {
         }
         Action = "sts:AssumeRoleWithWebIdentity"
         Condition = {
-		  StringEquals = {
-			"cognito-identity.amazonaws.com:aud" = aws_cognito_identity_pool.fittrack.id
-		  }
-		  "ForAllValues:StringEquals" = {
-			"cognito-identity.amazonaws.com:amr" = "authenticated"
-		  }
-		}
-
+          StringEquals = {
+            "cognito-identity.amazonaws.com:aud" = aws_cognito_identity_pool.fittrack.id
+          }
+          "ForAllValues:StringLike" = {
+            "cognito-identity.amazonaws.com:amr" = "authenticated"
+          }
+        }
       }
     ]
   })
@@ -158,7 +145,7 @@ resource "aws_iam_role_policy" "cognito_authenticated_s3" {
           "s3:GetObject",
           "s3:DeleteObject"
         ]
-        Resource = "${aws_s3_bucket.activity_photos.arn}/activities/$${aws:username}/*"
+        Resource = "${aws_s3_bucket.activity_photos.arn}/activities/$${cognito-identity.amazonaws.com:sub}/*"
       }
     ]
   })
