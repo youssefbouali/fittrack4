@@ -118,19 +118,71 @@ resource "aws_iam_role_policy_attachment" "elastic_beanstalk_service" {
   policy_arn = "arn:aws:iam::aws:policy/service-role/AWSElasticBeanstalkEnhancedHealth"
 }
 
-resource "aws_elastic_beanstalk_environment" "fittrack" {
-  name            = "${var.app_name}-${var.environment}-env"
-  application     = aws_elastic_beanstalk_application.fittrack.name
+resource "aws_elastic_beanstalk_environment" "fittrack" {resource "aws_elastic_beanstalk_environment" "fittrack" {
+  name        = "${var.app_name}-${var.environment}-env"
+  application = aws_elastic_beanstalk_application.fittrack.name
   solution_stack_name = "64bit Amazon Linux 2 v5.8.1 running Node.js 18"
-  environment_type = "LoadBalanced"
-  instance_type   = "t3.micro"
-  min_instances   = 1
-  max_instances   = 3
 
-  vpc_id = aws_vpc.main.id
-  subnets = join(",", aws_subnet.public[*].id)
-  security_groups = aws_security_group.elastic_beanstalk.id
+  # Instance profile
+  setting {
+    namespace = "aws:autoscaling:launchconfiguration"
+    name      = "IamInstanceProfile"
+    value     = aws_iam_instance_profile.elastic_beanstalk_ec2.name
+  }
 
+  # Environment type
+  setting {
+    namespace = "aws:elasticbeanstalk:environment"
+    name      = "EnvironmentType"
+    value     = "LoadBalanced"
+  }
+
+  # Instance type
+  setting {
+    namespace = "aws:autoscaling:launchconfiguration"
+    name      = "InstanceType"
+    value     = "t3.micro"
+  }
+
+  # Min/Max instances
+  setting {
+    namespace = "aws:autoscaling:asg"
+    name      = "MinSize"
+    value     = "1"
+  }
+
+  setting {
+    namespace = "aws:autoscaling:asg"
+    name      = "MaxSize"
+    value     = "3"
+  }
+
+  # VPC
+  setting {
+    namespace = "aws:ec2:vpc"
+    name      = "VPCId"
+    value     = aws_vpc.main.id
+  }
+
+  setting {
+    namespace = "aws:ec2:vpc"
+    name      = "Subnets"
+    value     = join(",", aws_subnet.public[*].id)
+  }
+
+  setting {
+    namespace = "aws:ec2:vpc"
+    name      = "ELBSubnets"
+    value     = join(",", aws_subnet.public[*].id)
+  }
+
+  setting {
+    namespace = "aws:ec2:vpc"
+    name      = "SecurityGroups"
+    value     = aws_security_group.elastic_beanstalk.id
+  }
+
+  # Environment variables
   setting {
     namespace = "aws:elasticbeanstalk:application:environment"
     name      = "NODE_ENV"
@@ -162,13 +214,9 @@ resource "aws_elastic_beanstalk_environment" "fittrack" {
   }
 
   setting {
-    namespace = "aws:autoscaling:launchconfiguration"
-    name      = "IamInstanceProfile"
-    value     = aws_iam_instance_profile.elastic_beanstalk_ec2.name
-  }
-
-  environment_variables = {
-    DATABASE_URL = "postgresql://${var.db_username}:${var.db_password}@${aws_db_instance.fittrack.endpoint}/${aws_db_instance.fittrack.db_name}"
+    namespace = "aws:elasticbeanstalk:application:environment"
+    name      = "DATABASE_URL"
+    value     = "postgresql://${var.db_username}:${var.db_password}@${aws_db_instance.fittrack.endpoint}/${aws_db_instance.fittrack.db_name}"
   }
 
   tags = var.tags
@@ -179,6 +227,7 @@ resource "aws_elastic_beanstalk_environment" "fittrack" {
     aws_security_group.elastic_beanstalk
   ]
 }
+
 
 #output "elastic_beanstalk_endpoint" {
 #  value       = aws_elastic_beanstalk_environment.fittrack.endpoint_url
