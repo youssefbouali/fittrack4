@@ -496,7 +496,7 @@ resource "aws_cloudfront_distribution" "frontend" {
   }
 
   origin {
-    domain_name = regex("https?://([^/]+)", aws_elastic_beanstalk_environment.fittrack.endpoint_url)[0]
+    domain_name = aws_elastic_beanstalk_environment.fittrack.cname
     origin_id   = "ElasticBeanstalkAPI"
     custom_origin_config {
       http_port              = 80
