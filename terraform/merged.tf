@@ -483,6 +483,86 @@ resource "aws_elastic_beanstalk_environment" "fittrack" {
   ]
 }
 
+
+# ========================================
+# CloudFront Cache & Origin Request Policies
+# ========================================
+resource "aws_cloudfront_cache_policy" "caching_optimized" {
+  name        = "Managed-CachingOptimized"
+  comment     = "AWS Managed CachingOptimized Policy"
+  default_ttl = 86400
+  max_ttl     = 31536000
+  min_ttl     = 1
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "none"
+    }
+    headers_config {
+      header_behavior = "none"
+    }
+    query_strings_config {
+      query_string_behavior = "none"
+    }
+  }
+}
+
+resource "aws_cloudfront_cache_policy" "caching_disabled" {
+  name        = "Managed-CachingDisabled"
+  comment     = "AWS Managed CachingDisabled Policy"
+  default_ttl = 0
+  max_ttl     = 0
+  min_ttl     = 0
+
+  parameters_in_cache_key_and_forwarded_to_origin {
+    cookies_config {
+      cookie_behavior = "all"
+    }
+    headers_config {
+      header_behavior = "whitelist"
+      headers {
+        items = ["Origin", "Access-Control-Request-Headers", "Access-Control-Request-Method"]
+      }
+    }
+    query_strings_config {
+      query_string_behavior = "all"
+    }
+  }
+}
+
+resource "aws_cloudfront_origin_request_policy" "all_viewer" {
+  name    = "Managed-AllViewer"
+  comment = "AWS Managed AllViewer Policy"
+
+  cookies_config {
+    cookie_behavior = "all"
+  }
+  headers_config {
+    header_behavior = "allViewer"
+  }
+  query_strings_config {
+    query_string_behavior = "all"
+  }
+}
+
+resource "aws_cloudfront_origin_request_policy" "all_viewer_except_host" {
+  name    = "Managed-AllViewerExceptHostHeader"
+  comment = "AWS Managed AllViewerExceptHostHeader Policy"
+
+  cookies_config {
+    cookie_behavior = "all"
+  }
+  headers_config {
+    header_behavior = "allExcept"
+    headers {
+      items = ["Host"]
+    }
+  }
+  query_strings_config {
+    query_string_behavior = "all"
+  }
+}
+
 # ========================================
 # CloudFront Distribution (يجب أن يكون بعد EB)
 # ========================================
@@ -514,8 +594,10 @@ resource "aws_cloudfront_distribution" "frontend" {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "S3Frontend"
-    cache_policy_id  = "658327ea-f89d-4fab-a63d-7e88639e58f6" # CachingOptimized
-    origin_request_policy_id = "216adef6-5c7f-47e4-b989-5492eafa07d3" # AllViewer
+	
+    cache_policy_id          = aws_cloudfront_cache_policy.caching_optimized.id
+    origin_request_policy_id = aws_cloudfront_origin_request_policy.all_viewer.id
+	
     viewer_protocol_policy = "redirect-to-https"
     min_ttl = 0
     default_ttl = 3600
@@ -527,8 +609,10 @@ resource "aws_cloudfront_distribution" "frontend" {
     allowed_methods  = ["DELETE", "GET", "HEAD", "OPTIONS", "PATCH", "POST", "PUT"]
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "ElasticBeanstalkAPI"
-    cache_policy_id  = "4135ea2d-6df8-44a3-9df3-4b5a84be39ad" # CachingDisabled
-    origin_request_policy_id = "5976c003-0a09-4a8d-9a2b-3c8d8e6d2f3a"
+	
+    cache_policy_id          = aws_cloudfront_cache_policy.caching_disabled.id
+    origin_request_policy_id = aws_cloudfront_origin_request_policy.all_viewer_except_host.id
+	
     viewer_protocol_policy = "https-only"
     min_ttl = 0
     default_ttl = 0
