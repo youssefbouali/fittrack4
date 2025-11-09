@@ -14,18 +14,23 @@ export default function App({ Component, pageProps }: AppProps) {
 
     // Configure Amplify with Cognito
     Amplify.configure({
-      Auth: {
-        region: awsConfig.region,
-        userPoolId: awsConfig.userPoolId,
-        userPoolWebClientId: awsConfig.clientId,
-        identityPoolId: awsConfig.identityPoolId,
-      },
-      Storage: {
-        region: awsConfig.region,
-        bucket: awsConfig.s3Bucket,
-        identityPoolId: awsConfig.identityPoolId,
-      },
-    });
+	  Auth: {
+		Cognito: {
+		  region: awsConfig.region,
+		  userPoolId: awsConfig.userPoolId,
+		  userPoolClientId: awsConfig.clientId,
+		  identityPoolId: awsConfig.identityPoolId
+		}
+	  },
+	  Storage: {
+		S3: {
+		  region: awsConfig.region,
+		  bucket: awsConfig.s3Bucket,
+		  identityPoolId: awsConfig.identityPoolId
+		}
+	  }
+	});
+
 
     // Check if user is already logged in
     const checkAuth = async () => {
