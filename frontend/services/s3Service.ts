@@ -1,51 +1,27 @@
-import { Storage } from 'aws-amplify';
+import { Storage as AmplifyStorage } from '@aws-amplify/storage';
 
 export const S3Service = {
-  async uploadFile(
-    file: File,
-    fileName: string,
-  ): Promise<{ key: string; url: string }> {
-    try {
-      const result = await Storage.put(fileName, file, {
-        contentType: file.type,
-        level: 'public',
-      });
+  async uploadFile(file: File, fileName: string): Promise<{ key: string; url: string }> {
+    const result = await AmplifyStorage.put(fileName, file, {
+      contentType: file.type,
+      level: 'public',
+    });
 
-      return {
-        key: result.key,
-        url: await this.getFileUrl(result.key),
-      };
-    } catch (error) {
-      throw new Error(
-        error instanceof Error ? error.message : 'File upload failed',
-      );
-    }
+    return {
+      key: result.key,
+      url: await this.getFileUrl(result.key),
+    };
   },
 
   async getFileUrl(key: string): Promise<string> {
-    try {
-      const url = await Storage.get(key, {
-        level: 'public',
-        expires: 3600, // 1 hour expiration
-      });
-      return url as string;
-    } catch (error) {
-      throw new Error(
-        error instanceof Error ? error.message : 'Failed to get file URL',
-      );
-    }
+    return AmplifyStorage.get(key, {
+      level: 'public',
+      expires: 3600,
+    }) as Promise<string>;
   },
 
   async deleteFile(key: string): Promise<void> {
-    try {
-      await Storage.remove(key, {
-        level: 'public',
-      });
-    } catch (error) {
-      throw new Error(
-        error instanceof Error ? error.message : 'File deletion failed',
-      );
-    }
+    await AmplifyStorage.remove(key, { level: 'public' });
   },
 
   generateFileName(userId: string, fileExtension: string): string {
