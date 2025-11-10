@@ -1,4 +1,7 @@
-import { Storage } from 'aws-amplify';
+import Amplify, * as AmplifyModules from 'aws-amplify';
+
+// ثم تستخدم:
+const Storage = AmplifyModules.Storage;
 
 export const S3Service = {
   async uploadFile(file: File, fileName: string): Promise<{ key: string; url: string }> {
