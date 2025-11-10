@@ -1,8 +1,8 @@
-import { Storage } from 'aws-amplify';
+import Amplify, { Storage as AmplifyStorage } from 'aws-amplify';
 
 export const S3Service = {
   async uploadFile(file: File, fileName: string): Promise<{ key: string; url: string }> {
-    const result: any = await Storage.put(fileName, file, {
+    const result: any = await AmplifyStorage.put(fileName, file, {
       contentType: file.type,
       level: 'public',
     });
@@ -14,15 +14,12 @@ export const S3Service = {
   },
 
   async getFileUrl(key: string): Promise<string> {
-    const url: any = await Storage.get(key, {
-      level: 'public',
-      expires: 3600,
-    });
+    const url: any = await AmplifyStorage.get(key, { level: 'public', expires: 3600 });
     return url as string;
   },
 
   async deleteFile(key: string): Promise<void> {
-    await Storage.remove(key, { level: 'public' });
+    await AmplifyStorage.remove(key, { level: 'public' });
   },
 
   generateFileName(userId: string, fileExtension: string): string {
