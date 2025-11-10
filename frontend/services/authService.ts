@@ -62,9 +62,15 @@ export const AuthService = {
   
   
   async confirmSignup(credentials: { username: string; code: string }): Promise<{ user: User; accessToken: string; idToken: string }> {
-  await Auth.confirmSignUp(credentials.username, credentials.code);
+  await Auth.confirmSignUp({
+    username: credentials.username,
+    code: credentials.code,
+  } as any);
 
-  const result: any = await Auth.signIn(credentials.username, credentials.code);
+  const result: any = await Auth.signIn({
+    username: credentials.username,
+    password: credentials.code, 
+  } as any);
 
   const session = result.getSignInUserSession();
 
