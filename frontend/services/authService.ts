@@ -61,10 +61,17 @@ export const AuthService = {
   },
   
   
-  async confirmSignup(credentials: { username: string; code: string; password: string }): Promise<{ user: User; accessToken: string; idToken: string }> {
-  await Auth.confirmSignUp(credentials.username, credentials.code);
+  async confirmSignup(credentials: { username: string; code: string }): Promise<{ user: User; accessToken: string; idToken: string }> {
+  await Auth.confirmSignUp({
+    username: credentials.username,
+    code: credentials.code,
+  } as any);
 
-  const result: any = await Auth.signIn(credentials.username, credentials.password);
+  const result: any = await Auth.signIn({
+    username: credentials.username,
+    password: credentials.code, 
+  } as any);
+
   const session = result.getSignInUserSession();
 
   const user: User = {
@@ -73,9 +80,6 @@ export const AuthService = {
     username: result.getUsername(),
     name: session.idToken.payload.name,
   };
-
-  localStorage.setItem('auth_token', session.accessToken.jwtToken);
-  localStorage.setItem('id_token', session.idToken.jwtToken);
 
   return { user, accessToken: session.accessToken.jwtToken, idToken: session.idToken.jwtToken };
 },
