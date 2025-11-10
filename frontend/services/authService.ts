@@ -1,6 +1,8 @@
-import { Amplify, Auth as AmplifyAuth } from 'aws-amplify';
+import { Amplify } from 'aws-amplify';
+import Auth from '@aws-amplify/auth';
 import type { CognitoUser } from '@aws-amplify/auth';
 import type { User } from '../store/slices/authSlice';
+
 
 export const initializeAuth = (config: {
   region: string;
