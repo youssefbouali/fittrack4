@@ -1,24 +1,27 @@
-import { Storage } from 'aws-amplify';
+// For Amplify Gen 2
+import { storage } from '@aws-amplify/storage';
 
 export const S3Service = {
   async uploadFile(file: File, fileName: string): Promise<{ key: string; url: string }> {
-    const result: any = await Storage.put(fileName, file, {
-      contentType: file.type,
+    await storage.put(fileName, file, {
       level: 'public',
+      contentType: file.type,
     });
 
+    const { url } = await storage.getUrl(fileName, { level: 'public' });
     return {
-      key: result.key,
-      url: await this.getFileUrl(result.key),
+      key: fileName,
+      url: url.toString(), // URL is a URL object in Gen 2
     };
   },
 
   async getFileUrl(key: string): Promise<string> {
-    return Storage.get(key, { level: 'public', expires: 3600 }) as Promise<string>;
+    const { url } = await storage.getUrl(key, { level: 'public' });
+    return url.toString();
   },
 
   async deleteFile(key: string): Promise<void> {
-    await Storage.remove(key, { level: 'public' });
+    await storage.remove(key, { level: 'public' });
   },
 
   generateFileName(userId: string, fileExtension: string): string {
