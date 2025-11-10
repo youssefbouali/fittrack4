@@ -42,7 +42,8 @@ export const AuthService = {
 
 
   async signin(credentials: { username: string; password: string }): Promise<{ user: User; accessToken: string; idToken: string }> {
-    const result: CognitoUser = await Auth.signIn(credentials.username, credentials.password); // هنا أيضاً
+	const result: CognitoUser = await Auth.signIn({ username: credentials.username, password: credentials.password });
+
     const session = result.getSignInUserSession();
 
     const user: User = {
