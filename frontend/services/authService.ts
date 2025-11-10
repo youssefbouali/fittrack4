@@ -36,7 +36,7 @@ export const AuthService = {
     userId: username,
     userSub: username,
   };
-}
+},
 
 
 
@@ -59,7 +59,7 @@ export const AuthService = {
   },
 
   async signout(): Promise<void> {
-    await Auth.signOut();  // هنا أيضاً
+    await Auth.signOut();  
     localStorage.removeItem('auth_token');
     localStorage.removeItem('id_token');
   },
