@@ -18,7 +18,7 @@ export default function App({ Component, pageProps }: AppProps) {
 		Cognito: {
 		  region: awsConfig.region,
 		  userPoolId: awsConfig.userPoolId,
-		  userPoolClientId: awsConfig.clientId,
+		  userPoolWebClientId: awsConfig.clientId,
 		  identityPoolId: awsConfig.identityPoolId
 		}
 	  },
