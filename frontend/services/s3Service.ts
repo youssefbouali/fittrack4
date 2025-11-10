@@ -1,27 +1,55 @@
-// For Amplify Gen 2
-import { storage } from '@aws-amplify/storage';
+// services/s3Service.ts
+import { getUrl, uploadData, remove } from 'aws-amplify/storage';
 
 export const S3Service = {
   async uploadFile(file: File, fileName: string): Promise<{ key: string; url: string }> {
-    await storage.put(fileName, file, {
-      level: 'public',
-      contentType: file.type,
-    });
+    try {
+      // Upload the file
+      await uploadData({
+        key: fileName,
+        data: file,
+        options: {
+          contentType: file.type,
+          accessLevel: 'guest', // equivalent to 'public' in Gen 1
+        },
+      }).result;
 
-    const { url } = await storage.getUrl(fileName, { level: 'public' });
-    return {
-      key: fileName,
-      url: url.toString(), // URL is a URL object in Gen 2
-    };
+      // Get the public URL
+      const { url } = await getUrl({
+        key: fileName,
+        options: { accessLevel: 'guest' },
+      });
+
+      return {
+        key: fileName,
+        url: url.toString(),
+      };
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      throw error;
+    }
   },
 
   async getFileUrl(key: string): Promise<string> {
-    const { url } = await storage.getUrl(key, { level: 'public' });
-    return url.toString();
+    try {
+      const { url } = await getUrl({
+        key,
+        options: { accessLevel: 'guest' },
+      });
+      return url.toString();
+    } catch (error) {
+      console.error('Error getting file URL:', error);
+      throw error;
+    }
   },
 
   async deleteFile(key: string): Promise<void> {
-    await storage.remove(key, { level: 'public' });
+    try {
+      await remove({ key, options: { accessLevel: 'guest' } });
+    } catch (error) {
+      console.error('Error deleting file:', error);
+      throw error;
+    }
   },
 
   generateFileName(userId: string, fileExtension: string): string {
