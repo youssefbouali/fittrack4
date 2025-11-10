@@ -9,34 +9,29 @@ import '../styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
   useEffect(() => {
-    // Validate and initialize AWS config
     validateAwsConfig();
 
-    // Configure Amplify with Cognito (نسخة حديثة)
     Amplify.configure({
       Auth: {
         region: awsConfig.region,
         userPoolId: awsConfig.userPoolId,
         userPoolWebClientId: awsConfig.clientId,
         identityPoolId: awsConfig.identityPoolId,
-      },
+      } as any, 
       Storage: {
         region: awsConfig.region,
         bucket: awsConfig.s3Bucket,
         identityPoolId: awsConfig.identityPoolId,
-      },
+      } as any,
     });
 
-    // Check if user is already logged in
     const checkAuth = async () => {
       try {
         const user = await AuthService.getCurrentUser();
         if (user) {
-          // User is logged in, يمكنك dispatch للـRedux هنا إذا أردت
+          // User is logged in
         }
-      } catch (error) {
-        // No user logged in
-      }
+      } catch (error) {}
     };
 
     checkAuth();
