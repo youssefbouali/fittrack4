@@ -19,6 +19,14 @@ export const initializeAuth = (config: {
 };
 
 
+interface User {
+  id: string;
+  email: string;
+  username: string;
+  name?: string;
+}
+
+
 
 export const AuthService = {
   async signup(credentials: { email: string; password: string; username?: string }): Promise<{ userId: string; userSub: string }> {
@@ -37,25 +45,25 @@ export const AuthService = {
   },
 
   async signin(credentials: { username: string; password: string }): Promise<{ user: User; accessToken: string; idToken: string }> {
-    try {
-      const result = await Auth.signIn(credentials.username, credentials.password);
-      const session = result.signInUserSession;
+  try {
+    const result = await Auth.signIn(credentials.username, credentials.password);
+    const session = result.signInUserSession;
 
-      const user: User = {
-        id: session.idToken.payload.sub,
-        email: session.idToken.payload.email,
-        username: result.username,
-        name: session.idToken.payload.name,
-      };
+    const user: User = {
+      id: session.idToken.payload.sub,
+      email: session.idToken.payload.email,
+      username: result.username,
+      name: session.idToken.payload.name,
+    };
 
-      localStorage.setItem('auth_token', session.accessToken.jwtToken);
-      localStorage.setItem('id_token', session.idToken.jwtToken);
+    localStorage.setItem('auth_token', session.accessToken.jwtToken);
+    localStorage.setItem('id_token', session.idToken.jwtToken);
 
-      return { user, accessToken: session.accessToken.jwtToken, idToken: session.idToken.jwtToken };
-    } catch (error) {
-      throw new Error(error instanceof Error ? error.message : 'Sign in failed');
-    }
-  },
+    return { user, accessToken: session.accessToken.jwtToken, idToken: session.idToken.jwtToken };
+  } catch (error) {
+    throw new Error(error instanceof Error ? error.message : 'Sign in failed');
+  }
+},
 
   async signout(): Promise<void> {
     try {
