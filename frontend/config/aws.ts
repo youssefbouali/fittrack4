@@ -8,6 +8,8 @@ export const awsConfig = {
   apiEndpoint: process.env.NEXT_PUBLIC_API_ENDPOINT || 'http://localhost:5000',
 };
 
+console.log("AWS Config:", awsConfig);
+
 export const validateAwsConfig = () => {
   const requiredVars = [
     'region',
