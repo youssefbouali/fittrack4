@@ -1,5 +1,5 @@
 import type { AppProps } from 'next/app';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Provider } from 'react-redux';
 import { store } from '../store/store';
 import { awsConfig, validateAwsConfig } from '../config/aws';
@@ -8,6 +8,8 @@ import { Amplify } from 'aws-amplify';
 import '../styles/globals.css';
 
 export default function App({ Component, pageProps }: AppProps) {
+  const [isAmplifyConfigured, setAmplifyConfigured] = useState(false);
+
   useEffect(() => {
     validateAwsConfig();
 
@@ -17,7 +19,7 @@ export default function App({ Component, pageProps }: AppProps) {
         userPoolId: awsConfig.userPoolId,
         userPoolWebClientId: awsConfig.clientId,
         identityPoolId: awsConfig.identityPoolId,
-      } as any, 
+      } as any,
       Storage: {
         region: awsConfig.region,
         bucket: awsConfig.s3Bucket,
@@ -25,17 +27,22 @@ export default function App({ Component, pageProps }: AppProps) {
       } as any,
     });
 
+    setAmplifyConfigured(true);
+
     const checkAuth = async () => {
       try {
         const user = await AuthService.getCurrentUser();
         if (user) {
-          // User is logged in
         }
-      } catch (error) {}
+      } catch (error) {
+        console.error(error);
+      }
     };
 
     checkAuth();
   }, []);
+
+  if (!isAmplifyConfigured) return null; 
 
   return (
     <Provider store={store}>
