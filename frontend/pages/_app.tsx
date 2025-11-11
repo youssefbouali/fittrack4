@@ -4,52 +4,18 @@ import { Provider } from 'react-redux';
 import { store } from '../store/store';
 import { awsConfig, validateAwsConfig } from '../config/aws';
 import { AuthService } from '../services/authService';
-import { Amplify } from 'aws-amplify';
+import dynamic from 'next/dynamic';
 import '../styles/globals.css';
 
+const AppContent = dynamic(
+  () => import('../components/AppContent'), 
+  { ssr: false } 
+);
+
 export default function App({ Component, pageProps }: AppProps) {
-  const [isAmplifyConfigured, setAmplifyConfigured] = useState(false);
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      validateAwsConfig();
-
-      Amplify.configure({
-        Auth: {
-          region: awsConfig.region,
-          userPoolId: awsConfig.userPoolId,
-          userPoolWebClientId: awsConfig.clientId,
-          identityPoolId: awsConfig.identityPoolId,
-        },
-        Storage: {
-          region: awsConfig.region,
-          bucket: awsConfig.s3Bucket,
-          identityPoolId: awsConfig.identityPoolId,
-        },
-      });
-
-      setAmplifyConfigured(true); 
-
-      const checkAuth = async () => {
-        try {
-          const user = await AuthService.getCurrentUser();
-          if (user) {
-            console.log("User logged in:", user);
-          }
-        } catch (error) {
-          console.error(error);
-        }
-      };
-
-      checkAuth();
-    }
-  }, []);
-
-  if (!isAmplifyConfigured) return null; 
-
   return (
     <Provider store={store}>
-      <Component {...pageProps} />
+      <AppContent Component={Component} pageProps={pageProps} />
     </Provider>
   );
 }
