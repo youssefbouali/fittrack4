@@ -5,6 +5,7 @@ import { store } from '../store/store';
 import dynamic from 'next/dynamic';
 import '../styles/globals.css';
 import '../styles/auth.css';
+import '../styles/coach-dashboard.css';
 
 const AppContent = dynamic(() => import('../components/AppContent'), { ssr: false });
 
